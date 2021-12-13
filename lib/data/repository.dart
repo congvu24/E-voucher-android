@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:boilerplate/data/local/datasources/post/post_datasource.dart';
+import 'package:boilerplate/data/network/apis/posts/general_api.dart';
 import 'package:boilerplate/data/sharedpref/shared_preference_helper.dart';
 import 'package:boilerplate/models/post/post.dart';
 import 'package:boilerplate/models/post/post_list.dart';
@@ -15,12 +16,14 @@ class Repository {
 
   // api objects
   final PostApi _postApi;
+  final GeneralApi _generalApi;
 
   // shared pref object
   final SharedPreferenceHelper _sharedPrefsHelper;
 
   // constructor
-  Repository(this._postApi, this._sharedPrefsHelper, this._postDataSource);
+  Repository(this._postApi, this._sharedPrefsHelper, this._postDataSource,
+      this._generalApi);
 
   // Post: ---------------------------------------------------------------------
   Future<PostList> getPosts() async {
@@ -66,10 +69,11 @@ class Repository {
       .then((id) => id)
       .catchError((error) => throw error);
 
-
   // Login:---------------------------------------------------------------------
   Future<bool> login(String email, String password) async {
-    return await Future.delayed(Duration(seconds: 2), ()=> true);
+    String token = await _generalApi.login(email, password);
+    await _sharedPrefsHelper.saveAuthToken(token);
+    return true;
   }
 
   Future<void> saveIsLoggedIn(bool value) =>

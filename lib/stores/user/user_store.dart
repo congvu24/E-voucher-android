@@ -19,11 +19,9 @@ abstract class _UserStore with Store {
   final ErrorStore errorStore = ErrorStore();
 
   // bool to check if current user is logged in
-  bool isLoggedIn = false;
 
   // constructor:---------------------------------------------------------------
   _UserStore(Repository repository) : this._repository = repository {
-
     // setting up disposers
     _setupDisposers();
 
@@ -44,9 +42,12 @@ abstract class _UserStore with Store {
 
   // empty responses:-----------------------------------------------------------
   static ObservableFuture<bool> emptyLoginResponse =
-  ObservableFuture.value(false);
+      ObservableFuture.value(false);
 
   // store variables:-----------------------------------------------------------
+  @observable
+  bool isLoggedIn = false;
+
   @observable
   bool success = false;
 
@@ -59,7 +60,6 @@ abstract class _UserStore with Store {
   // actions:-------------------------------------------------------------------
   @action
   Future login(String email, String password) async {
-
     final future = _repository.login(email, password);
     loginFuture = ObservableFuture(future);
     await future.then((value) async {

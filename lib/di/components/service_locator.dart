@@ -1,5 +1,5 @@
-
 import 'package:boilerplate/data/local/datasources/post/post_datasource.dart';
+import 'package:boilerplate/data/network/apis/posts/general_api.dart';
 import 'package:boilerplate/data/network/apis/posts/post_api.dart';
 import 'package:boilerplate/data/network/dio_client.dart';
 import 'package:boilerplate/data/network/rest_client.dart';
@@ -27,16 +27,20 @@ Future<void> setupLocator() async {
 
   // async singletons:----------------------------------------------------------
   getIt.registerSingletonAsync<Database>(() => LocalModule.provideDatabase());
-  getIt.registerSingletonAsync<SharedPreferences>(() => LocalModule.provideSharedPreferences());
+  getIt.registerSingletonAsync<SharedPreferences>(
+      () => LocalModule.provideSharedPreferences());
 
   // singletons:----------------------------------------------------------------
-  getIt.registerSingleton(SharedPreferenceHelper(await getIt.getAsync<SharedPreferences>()));
-  getIt.registerSingleton<Dio>(NetworkModule.provideDio(getIt<SharedPreferenceHelper>()));
+  getIt.registerSingleton(
+      SharedPreferenceHelper(await getIt.getAsync<SharedPreferences>()));
+  getIt.registerSingleton<Dio>(
+      NetworkModule.provideDio(getIt<SharedPreferenceHelper>()));
   getIt.registerSingleton(DioClient(getIt<Dio>()));
   getIt.registerSingleton(RestClient());
 
   // api's:---------------------------------------------------------------------
   getIt.registerSingleton(PostApi(getIt<DioClient>(), getIt<RestClient>()));
+  getIt.registerSingleton(GeneralApi(getIt<DioClient>(), getIt<RestClient>()));
 
   // data sources
   getIt.registerSingleton(PostDataSource(await getIt.getAsync<Database>()));
@@ -46,6 +50,7 @@ Future<void> setupLocator() async {
     getIt<PostApi>(),
     getIt<SharedPreferenceHelper>(),
     getIt<PostDataSource>(),
+    getIt<GeneralApi>(),
   ));
 
   // stores:--------------------------------------------------------------------

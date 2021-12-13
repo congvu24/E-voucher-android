@@ -1,5 +1,6 @@
 import 'package:another_flushbar/flushbar_helper.dart';
 import 'package:boilerplate/data/sharedpref/constants/preferences.dart';
+import 'package:boilerplate/stores/user/user_store.dart';
 import 'package:boilerplate/utils/routes/routes.dart';
 import 'package:boilerplate/stores/language/language_store.dart';
 import 'package:boilerplate/stores/post/post_store.dart';
@@ -19,9 +20,9 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   //stores:---------------------------------------------------------------------
-  late PostStore _postStore;
   late ThemeStore _themeStore;
   late LanguageStore _languageStore;
+  late UserStore _userStore;
 
   @override
   void initState() {
@@ -35,215 +36,222 @@ class _HomeScreenState extends State<HomeScreen> {
     // initializing stores
     _languageStore = Provider.of<LanguageStore>(context);
     _themeStore = Provider.of<ThemeStore>(context);
-    _postStore = Provider.of<PostStore>(context);
-
-    // check to see if already called api
-    if (!_postStore.loading) {
-      _postStore.getPosts();
-    }
+    _userStore = Provider.of<UserStore>(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),
-      body: _buildBody(),
-    );
-  }
-
-  // app bar methods:-----------------------------------------------------------
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      title: Text(AppLocalizations.of(context).translate('home_tv_posts')),
-      actions: _buildActions(context),
-    );
-  }
-
-  List<Widget> _buildActions(BuildContext context) {
-    return <Widget>[
-      _buildLanguageButton(),
-      _buildThemeButton(),
-      _buildLogoutButton(),
-    ];
-  }
-
-  Widget _buildThemeButton() {
-    return Observer(
-      builder: (context) {
-        return IconButton(
-          onPressed: () {
-            _themeStore.changeBrightnessToDark(!_themeStore.darkMode);
-          },
-          icon: Icon(
-            _themeStore.darkMode ? Icons.brightness_5 : Icons.brightness_3,
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildLogoutButton() {
-    return IconButton(
-      onPressed: () {
-        SharedPreferences.getInstance().then((preference) {
-          preference.setBool(Preferences.is_logged_in, false);
-          Navigator.of(context).pushReplacementNamed(Routes.login);
-        });
-      },
-      icon: Icon(
-        Icons.power_settings_new,
-      ),
-    );
-  }
-
-  Widget _buildLanguageButton() {
-    return IconButton(
-      onPressed: () {
-        _buildLanguageDialog();
-      },
-      icon: Icon(
-        Icons.language,
-      ),
-    );
-  }
-
-  // body methods:--------------------------------------------------------------
-  Widget _buildBody() {
-    return Stack(
-      children: <Widget>[
-        _handleErrorMessage(),
-        _buildMainContent(),
-      ],
-    );
-  }
-
-  Widget _buildMainContent() {
-    return Observer(
-      builder: (context) {
-        return _postStore.loading
-            ? CustomProgressIndicatorWidget()
-            : Material(child: _buildListView());
-      },
-    );
-  }
-
-  Widget _buildListView() {
-    return _postStore.postList != null
-        ? ListView.separated(
-            itemCount: _postStore.postList!.posts!.length,
-            separatorBuilder: (context, position) {
-              return Divider();
-            },
-            itemBuilder: (context, position) {
-              return _buildListItem(position);
-            },
-          )
-        : Center(
-            child: Text(
-              AppLocalizations.of(context).translate('home_tv_no_post_found'),
-            ),
-          );
-  }
-
-  Widget _buildListItem(int position) {
-    return ListTile(
-      dense: true,
-      leading: Icon(Icons.cloud_circle),
-      title: Text(
-        '${_postStore.postList?.posts?[position].title}',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        softWrap: false,
-        style: Theme.of(context).textTheme.title,
-      ),
-      subtitle: Text(
-        '${_postStore.postList?.posts?[position].body}',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        softWrap: false,
-      ),
-    );
-  }
-
-  Widget _handleErrorMessage() {
-    return Observer(
-      builder: (context) {
-        if (_postStore.errorStore.errorMessage.isNotEmpty) {
-          return _showErrorMessage(_postStore.errorStore.errorMessage);
-        }
-
-        return SizedBox.shrink();
-      },
-    );
-  }
-
-  // General Methods:-----------------------------------------------------------
-  _showErrorMessage(String message) {
-    Future.delayed(Duration(milliseconds: 0), () {
-      if (message.isNotEmpty) {
-        FlushbarHelper.createError(
-          message: message,
-          title: AppLocalizations.of(context).translate('home_tv_error'),
-          duration: Duration(seconds: 3),
-        )..show(context);
-      }
-    });
-
-    return SizedBox.shrink();
-  }
-
-_buildLanguageDialog() {
-  _showDialog<String>(
-    context: context,
-    child: MaterialDialog(
-      borderRadius: 5.0,
-      enableFullWidth: true,
-      title: Text(
-        AppLocalizations.of(context).translate('home_tv_choose_language'),
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 16.0,
-        ),
-      ),
-      headerColor: Theme.of(context).primaryColor,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      closeButtonColor: Colors.white,
-      enableCloseButton: true,
-      enableBackButton: false,
-      onCloseButtonClicked: () {
-        Navigator.of(context).pop();
-      },
-      children: _languageStore.supportedLanguages
-          .map(
-            (object) => ListTile(
-              dense: true,
-              contentPadding: EdgeInsets.all(0.0),
-              title: Text(
-                object.language!,
-                style: TextStyle(
-                  color: _languageStore.locale == object.locale
-                      ? Theme.of(context).primaryColor
-                      : _themeStore.darkMode ? Colors.white : Colors.black,
+      appBar: null,
+      body: SafeArea(
+        child: Container(
+          padding: EdgeInsets.all(10),
+          child: Column(
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Tìm địa điểm gần bạn..."),
+                      InkWell(
+                          onTap: () {
+                            _userStore.logout();
+                            Navigator.of(context)
+                                .pushReplacementNamed(Routes.login);
+                          },
+                          child:
+                              Image.asset("assets/images/bell.png", width: 28)),
+                    ]),
+              ),
+              SizedBox(
+                height: 30,
+              ),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //   children: [
+              //     Text(
+              //       "Tài khoản",
+              //       style: TextStyle(
+              //           fontSize: 16,
+              //           color: Theme.of(context).primaryColor,
+              //           fontWeight: FontWeight.bold),
+              //     ),
+              //   ],
+              // ),
+              SizedBox(height: 10),
+              Container(
+                margin: EdgeInsets.all(10),
+                width: double.infinity,
+                height: 80,
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withOpacity(0.8),
+                    borderRadius: BorderRadius.all(Radius.circular(10))),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            Navigator.of(context).pushNamed(Routes.voucher);
+                          },
+                          child: Text("3 Voucher",
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white)),
+                        ),
+                      ],
+                    ),
+                    InkWell(
+                      onTap: () {
+                        Navigator.of(context).pushNamed(Routes.request);
+                      },
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(20))),
+                        child: Icon(
+                          Icons.add,
+                          size: 30,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                    )
+                  ],
                 ),
               ),
-              onTap: () {
-                Navigator.of(context).pop();
-                // change user language based on selected locale
-                _languageStore.changeLanguage(object.locale!);
-              },
-            ),
-          )
-          .toList(),
-    ),
-  );
-}
-
-  _showDialog<T>({required BuildContext context, required Widget child}) {
-    showDialog<T>(
-      context: context,
-      builder: (BuildContext context) => child,
-    ).then<void>((T? value) {
-      // The value passed to Navigator.pop() or null.
-    });
+              SizedBox(height: 60),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  InkWell(
+                    child: Column(
+                      children: [
+                        Image.asset(
+                          "assets/images/food.png",
+                          scale: 0.8,
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        Text("Mua sắm")
+                      ],
+                    ),
+                  ),
+                  InkWell(
+                    child: Column(
+                      children: [
+                        Image.asset(
+                          "assets/images/shop.png",
+                          scale: 0.8,
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        Text("Cửa hàng")
+                      ],
+                    ),
+                  ),
+                  InkWell(
+                    child: Column(
+                      children: [
+                        Image.asset(
+                          "assets/images/qr-code.png",
+                          scale: 0.8,
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        Text("Quét mã")
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 60,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  InkWell(
+                    child: Column(
+                      children: [
+                        Image.asset(
+                          "assets/images/gift-card.png",
+                          scale: 0.8,
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        Text("Quà tặng")
+                      ],
+                    ),
+                  ),
+                  InkWell(
+                    child: Column(
+                      children: [
+                        Image.asset(
+                          "assets/images/tickets.png",
+                          scale: 0.8,
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        Text("Vé")
+                      ],
+                    ),
+                  ),
+                  InkWell(
+                    child: Column(
+                      children: [
+                        Image.asset(
+                          "assets/images/healthcare.png",
+                          scale: 0.8,
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        Text("Sức khoẻ")
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 60,
+              ),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+              //   children: [
+              //     InkWell(
+              //       child: Column(
+              //         children: [
+              //           Image.asset(
+              //             "assets/images/utility.png",
+              //             scale: 0.8,
+              //           ),
+              //           SizedBox(
+              //             height: 5,
+              //           ),
+              //           Text("Dịch vụ khác")
+              //         ],
+              //       ),
+              //     ),
+              //     Container(),
+              //     Container()
+              //   ],
+              // )
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
