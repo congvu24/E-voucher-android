@@ -203,11 +203,17 @@ class _LoginScreenState extends State<LoginScreen> {
       buttonColor: Theme.of(context).primaryColor,
       textColor: Colors.white,
       onPressed: () async {
-        if (_store.canLogin) {
-          DeviceUtils.hideKeyboard(context);
-          _userStore.login(_userEmailController.text, _passwordController.text);
-        } else {
-          _showErrorMessage('Thông tin chưa đầy đủ');
+        try {
+          if (_store.canLogin) {
+            DeviceUtils.hideKeyboard(context);
+            await _userStore.login(
+                _userEmailController.text, _passwordController.text);
+          } else {
+            _showErrorMessage('Thông tin chưa đầy đủ');
+          }
+        } catch (err) {
+          _showErrorMessage(
+              'Thông tin đăng nhập thất bại hoặc tài khoản chưa được kích hoạt.');
         }
       },
     );

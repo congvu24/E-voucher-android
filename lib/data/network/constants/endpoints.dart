@@ -13,7 +13,10 @@ class Endpoints {
   // booking endpoints
   static const String getPosts = baseUrl + "/posts";
   static const String postLogin = baseUrl + "/auth/login/citizen";
-  static const String getMyVouchers = baseUrl + "/voucher/my?status=UNUSE";
+  static const String postSignup = baseUrl + "/citizen/register";
+  static const String getMyVouchers = baseUrl + "/voucher/my?status=UNUSE&take=20";
   static String getVoucherQr(String id) => baseUrl + "/voucher/qr/$id";
   static String createRequest = baseUrl + "/voucher-request";
+  static String getClaimHistory = baseUrl + "/voucher/claimed/my";
+  static String getRequestHistory = baseUrl + "/voucher-request?order=DESC&status=PENDING";
 }

@@ -7,7 +7,7 @@ class TextFieldWidget extends StatelessWidget {
   final bool isObscure;
   final bool isIcon;
   final TextInputType? inputType;
-  final TextEditingController textController;
+  final TextEditingController? textController;
   final EdgeInsets padding;
   final Color hintColor;
   final Color iconColor;
@@ -16,31 +16,26 @@ class TextFieldWidget extends StatelessWidget {
   final ValueChanged? onChanged;
   final bool autoFocus;
   final TextInputAction? inputAction;
+  final Function? onTap;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: padding,
       child: TextFormField(
-        controller: textController,
+        controller: textController ?? null,
         focusNode: focusNode,
+        onTap: () {
+          onTap!();
+        },
         onFieldSubmitted: onFieldSubmitted,
         onChanged: onChanged,
         autofocus: autoFocus,
         textInputAction: inputAction,
         obscureText: this.isObscure,
-        maxLength: 25,
         keyboardType: this.inputType,
         style: Theme.of(context).textTheme.bodyText1,
-        decoration: InputDecoration(
-            hintText: this.hint,
-            hintStyle: Theme.of(context)
-                .textTheme
-                .bodyText1!
-                .copyWith(color: hintColor),
-            errorText: errorText,
-            counterText: '',
-            icon: this.isIcon ? Icon(this.icon, color: iconColor) : null),
+        decoration: InputDecoration(hintText: this.hint, hintStyle: Theme.of(context).textTheme.bodyText1!.copyWith(color: hintColor), errorText: errorText, counterText: '', icon: this.isIcon ? Icon(this.icon, color: iconColor) : null),
       ),
     );
   }
@@ -48,8 +43,9 @@ class TextFieldWidget extends StatelessWidget {
   const TextFieldWidget({
     Key? key,
     required this.icon,
-    required this.errorText,
-    required this.textController,
+    this.onTap,
+    this.errorText,
+    this.textController,
     this.inputType,
     this.hint,
     this.isObscure = false,

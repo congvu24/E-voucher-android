@@ -26,6 +26,7 @@ class _RequestScreenState extends State<RequestScreen> {
         isLoading = true;
       });
       await _generalApi.createRequest(type, note);
+      Navigator.of(context).pop();
       FlushbarHelper.createSuccess(
         message: "Tạo yêu cầu thành công",
         title: "Thành công",
@@ -57,20 +58,34 @@ class _RequestScreenState extends State<RequestScreen> {
               children: [
                 Container(
                   margin: EdgeInsets.all(10),
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(5)),
-                          border: Border.all(
-                              color: Theme.of(context).primaryColorLight)),
-                      child: Icon(
-                        Icons.chevron_left,
-                        color: Theme.of(context).primaryColor,
+                  child: Row(
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5)),
+                              border: Border.all(
+                                  color: Theme.of(context).primaryColorLight)),
+                          child: Icon(
+                            Icons.chevron_left,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
                       ),
-                    ),
+                      Container(
+                        margin: EdgeInsets.only(
+                            left: MediaQuery.of(context).size.width / 2 - 100),
+                        child: Center(
+                            child: Text(
+                          "Yêu cầu hỗ trợ",
+                          style: TextStyle(fontSize: 16),
+                        )),
+                      )
+                    ],
                   ),
                 ),
                 Container(

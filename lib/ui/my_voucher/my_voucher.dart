@@ -1,14 +1,18 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:another_flushbar/flushbar_helper.dart';
 import 'package:boilerplate/constants/voucher_type.dart';
 import 'package:boilerplate/data/network/apis/posts/general_api.dart';
 import 'package:boilerplate/di/components/service_locator.dart';
 import 'package:boilerplate/models/post/voucher.model.dart';
+import 'package:boilerplate/utils/routes/routes.dart';
 import 'package:boilerplate/widgets/progress_indicator_widget.dart';
 import 'package:boilerplate/widgets/rounded_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class MyVoucherScreen extends StatefulWidget {
   const MyVoucherScreen({Key? key}) : super(key: key);
@@ -85,18 +89,20 @@ class _MyVoucherScreenState extends State<MyVoucherScreen> {
                     ),
                   ),
                 ),
+                if(list.length > 0)
                 Container(
-                  height: MediaQuery.of(context).size.height,
+                  height: MediaQuery.of(context).size.height * 3,
                   child: RefreshIndicator(
                       child: ListView(
                         children: [
-                          ...list.map(
-                            (item) => _buildVoucher(context, item),
-                          )
+                          ...list.reversed.toList().map(
+                                (item) => _buildVoucher(context, item),
+                              ),
                         ],
                       ),
                       onRefresh: _handleRefresh),
                 )
+                else Center(child: Text("Không có voucher nào."),)
               ],
             ),
           ),
@@ -202,12 +208,40 @@ class VoucherQRWidget extends StatefulWidget {
 class _VoucherQRWidgetState extends State<VoucherQRWidget> {
   bool isLoading = true;
   late VoucherQR qr;
+  late IO.Socket socket;
+
   GeneralApi _generalApi = getIt<GeneralApi>();
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _handleLoad();
+    _connect();
+  }
+
+  _connect() {
+    print('try to connect');
+    socket = IO.io(
+        'http://34.87.41.29:3000',
+        IO.OptionBuilder()
+            .setTransports(['websocket'])
+            .disableAutoConnect()
+            .build());
+
+    socket.connect();
+    socket.onConnect((_) {
+      print('connect');
+    });
+    socket.on('claim_success', _handleSuccess);
+    socket.onDisconnect((_) => print('disconnect'));
+    socket.on('fromServer', (_) => print(_));
+  }
+
+  _handleSuccess(dynamic id) {
+    if (id.length != 0) {
+      Navigator.of(context).pop();
+      Navigator.of(context).pushNamed(Routes.success);
+    }
   }
 
   _handleLoad() async {
@@ -218,6 +252,13 @@ class _VoucherQRWidgetState extends State<VoucherQRWidget> {
         isLoading = false;
       });
     } catch (err) {}
+  }
+
+  @override
+  void dispose() {
+    socket.disconnect();
+    socket.dispose();
+    super.dispose();
   }
 
   @override
@@ -252,9 +293,8 @@ class _VoucherQRWidgetState extends State<VoucherQRWidget> {
                   SizedBox(
                     height: 10,
                   ),
-                  Text(
-                    "Thời hạn trong: 30s",
-                    style: TextStyle(fontSize: 18),
+                  CountdownTime(
+                    onComplete: _handleLoad,
                   ),
                   SizedBox(
                     height: 20,
@@ -277,6 +317,52 @@ class _VoucherQRWidgetState extends State<VoucherQRWidget> {
                 child: CircularProgressIndicator(),
               ),
       ),
+    );
+  }
+}
+
+class CountdownTime extends StatefulWidget {
+  final Function onComplete;
+  CountdownTime({Key? key, required this.onComplete}) : super(key: key);
+
+  @override
+  _CountdownTimeState createState() => _CountdownTimeState();
+}
+
+class _CountdownTimeState extends State<CountdownTime> {
+  late Timer time;
+  int timeCount = 0;
+
+  @override
+  void initState() {
+    var duration = const Duration(seconds: 1);
+    time = Timer.periodic(duration, (timer) {
+      setState(() {
+        print(timer.tick);
+        setState(() {
+          timeCount = timer.tick;
+        });
+        if (timer.tick >= 30) {
+          timer.cancel();
+          Navigator.of(context).pop();
+        }
+      });
+    });
+
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    time.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      "Thời hạn trong: " + (30 - timeCount).toString() + "s",
+      style: TextStyle(fontSize: 18),
     );
   }
 }

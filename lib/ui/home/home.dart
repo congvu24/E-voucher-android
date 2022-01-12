@@ -12,6 +12,7 @@ import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:material_dialog/material_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -23,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late ThemeStore _themeStore;
   late LanguageStore _languageStore;
   late UserStore _userStore;
+  late IO.Socket socket;
 
   @override
   void initState() {
@@ -97,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           onTap: () {
                             Navigator.of(context).pushNamed(Routes.voucher);
                           },
-                          child: Text("3 Voucher",
+                          child: Text("Voucher",
                               style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w700,
@@ -131,6 +133,41 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   InkWell(
+                    onTap: () {
+                      Navigator.of(context).pushNamed(Routes.history);
+                    },
+                    child: Column(
+                      children: [
+                        Image.asset(
+                          "assets/images/clock.png",
+                          scale: 0.8,
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        Text("Lịch sử")
+                      ],
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.of(context).pushNamed(Routes.myRequest);
+                    },
+                    child: Column(
+                      children: [
+                        Image.asset(
+                          "assets/images/request.png",
+                          scale: 0.8,
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        Text("Yêu cầu")
+                      ],
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {},
                     child: Column(
                       children: [
                         Image.asset(
@@ -141,20 +178,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           height: 5,
                         ),
                         Text("Mua sắm")
-                      ],
-                    ),
-                  ),
-                  InkWell(
-                    child: Column(
-                      children: [
-                        Image.asset(
-                          "assets/images/shop.png",
-                          scale: 0.8,
-                        ),
-                        SizedBox(
-                          height: 5,
-                        ),
-                        Text("Cửa hàng")
                       ],
                     ),
                   ),
@@ -204,7 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         SizedBox(
                           height: 5,
                         ),
-                        Text("Vé")
+                        Text("Rạp phim")
                       ],
                     ),
                   ),
@@ -219,6 +242,20 @@ class _HomeScreenState extends State<HomeScreen> {
                           height: 5,
                         ),
                         Text("Sức khoẻ")
+                      ],
+                    ),
+                  ),
+                  InkWell(
+                    child: Column(
+                      children: [
+                        Image.asset(
+                          "assets/images/telephone.png",
+                          scale: 0.8,
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        Text("Liên hệ")
                       ],
                     ),
                   ),

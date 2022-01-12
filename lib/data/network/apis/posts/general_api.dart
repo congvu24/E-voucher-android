@@ -71,4 +71,40 @@ class GeneralApi {
       throw e;
     }
   }
+
+  Future<void> signup(Map<String, dynamic> data) async {
+    try {
+      print(data);
+      Map<String, dynamic> response =
+          await _dioClient.post(Endpoints.postSignup, data: data);
+      print(response);
+    } catch (e) {
+      print(e.toString());
+      throw e;
+    }
+  }
+
+  Future<List<dynamic>> getClaimedHistory() async {
+    try {
+      Map<String, dynamic> response = await _dioClient.get(
+        Endpoints.getClaimHistory,
+      );
+      return response["data"];
+    } catch (e) {
+      print(e.toString());
+      throw e;
+    }
+  }
+
+  Future<List<dynamic>> getRequestHistory() async {
+    try {
+      Map<String, dynamic> response = await _dioClient.get(
+        Endpoints.getRequestHistory,
+      );
+      return response["data"];
+    } catch (e) {
+      print(e.toString());
+      throw e;
+    }
+  }
 }

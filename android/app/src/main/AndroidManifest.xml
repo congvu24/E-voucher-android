@@ -15,7 +15,8 @@
     <application
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"
-        android:label="Boilerplate Project">
+        android:label="My Voucher"
+        >
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density"

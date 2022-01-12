@@ -60,6 +60,7 @@ abstract class _UserStore with Store {
   // actions:-------------------------------------------------------------------
   @action
   Future login(String email, String password) async {
+    try{
     final future = _repository.login(email, password);
     loginFuture = ObservableFuture(future);
     await future.then((value) async {
@@ -71,11 +72,14 @@ abstract class _UserStore with Store {
         print('failed to login');
       }
     }).catchError((e) {
-      print(e);
       this.isLoggedIn = false;
       this.success = false;
       throw e;
     });
+    }
+    catch(err){
+      throw err;
+    }
   }
 
   logout() {
